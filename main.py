@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 '''CÁLCULO DO TURBOFAN'''
 
 K = 273.15                      #Temperatura kelvin
-Mo = np.linspace(0.1, 1, 10)     #Mach de voo variando de 0.1 a 1
+Mo = np.linspace(0.1, 1, 10)    #Mach de voo variando de 0.1 a 1
 pif = 1.7                       #Taxa de compressão LPC Motor escolhido = 1.7 - 1.8
 pic = 34.2                      #Taxa de compressão HPC Motor Escolhido = 34.2 - 42.8
 T04 = 1944                      #Temperatura máxima câmara combustão
@@ -104,8 +104,8 @@ Ae  = mah/(rho*Ue)
 
 '''Cálculo do impulso'''
 
-fnh = (mah*((1+f)*(Ue-Uo)))+((Pe-Po)*Ae)
-fnc = (B*mac*(Uef-Uo))+((Pef-Po)*Aef)
+fnh = (mah*((1+f)*(Ue-Uo)))+((Pe-Po)*Ae)    #Hot
+fnc = (B*mac*(Uef-Uo))+((Pef-Po)*Aef)       #Cold
 FN  = 2*(fnc+fnh)
 
 #print('fnh',fnh)
@@ -130,13 +130,11 @@ Wempty = 155500                                 #Peso vazio sem motor
 Clmax = 1.8                                     #CLMAX Admitido
 Aw = 427.8                                      #Área das asas
 
-rhocomb = 0.81
+rhocomb = 0.81                                  #Densidade combustível (JET A)
 qtdcomb = 25000                                 #Litros
 Wmotor = 7264                                   #Peso motor P&W PW4098
 Wpas = 368*70                                   #peso total de passageiros com peso médio de 70kg 3 classes - config padrão
 Wci = rhocomb*qtdcomb                           #Peso combustível possível
-                                                #Densidade combustível (JET A)
-#qtdcomb = Wci/(rhocomb*9.81)                   #Quantidade de combustível máxima em litros
 
 print('Wci',Wci)
 print('Quantidade de combustível', qtdcomb)
@@ -155,7 +153,7 @@ newcl = (2*WW) / (delta1*gamma*101325*(Mo**2)*Aw)
 cd2 = 0.026 + 0.0431*((newcl)**2)                   #Polar de arrasto
 FNdelta2 = (gamma/2) * 101325 * cd2 * (Mo**2) * Aw
 #print('Variação do peso inicial até o final', WW)
-'''
+
 plt.figure("Impulso Disponível / Requirido")
 plt.plot(Mo, FNdelta1, 'r', label='Impulso disponível')
 plt.plot(Mo, FNdelta2, 'b', label='Impulso requirido')
@@ -163,7 +161,7 @@ plt.legend()
 plt.xlabel('Mo')
 plt.ylabel('FN')
 plt.show()
-'''
+
 
 rhoarSL = (101325/(R*298))                      #Densidade do ar Sea level
 Vstall = (2*W/(Clmax*rhoarSL*Aw))**(1/2)        #Velocidade de stall
