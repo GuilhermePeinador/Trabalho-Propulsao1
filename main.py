@@ -6,18 +6,19 @@ import numpy as np
 #import sympy as smp
 import matplotlib.pyplot as plt
 
+''''Motor escolhido P&W PW4098'''
+
 '''CÁLCULO DO TURBOFAN'''
 
 K = 273.15                      #Temperatura kelvin
-Mo = np.linspace(0.1, 1, 5)    #Mach de voo variando de 0.1 a 1
+Mo = np.linspace(0.1, 1, 10)     #Mach de voo variando de 0.1 a 1
 pif = 1.7                       #Taxa de compressão LPC Motor escolhido = 1.7 - 1.8
 pic = 34.2                      #Taxa de compressão HPC Motor Escolhido = 34.2 - 42.8
-T04 = 1800                      #Temperatura máxima câmara combustão
+T04 = 1944                      #Temperatura máxima câmara combustão
 PCI = 42.8E6                    #Poder calorifico
 cp = 1004
 gamma = 1.4
-ma = 115                        #Massa de ar
-Po = 40.E3                      #Pressão na entrada
+Po = 22700                      #Pressão na entrada **** Colocar no relatório
 To = -30 + K                    #Temperatura em K na entrada
 B = 5.8                         #Bypass Motor Escolhido = 5.8 - 6.4
 R = 287                         #Constante R
@@ -28,9 +29,6 @@ PSL= 101325                     #Pressão em nível do mar
 
 P01 = Po*(1+((gamma-1)/2)*Mo**2)**(gamma/(gamma-1))
 T01 = To*(1+((gamma-1)/2)*Mo**2)
-
-#print("P01 =", P01)
-#print("T01 =", T01)
 
 '''Fan LPC'''
 
@@ -53,7 +51,7 @@ T03 = T03f*tauc
 
 P04 = P03
 f = ((T04/T03)-1)/((PCI/(cp*T03))-(T04/T03))
-print('f', f)
+#print('f', f)
 
 '''Conectar HPT-HPC'''
 
@@ -100,27 +98,27 @@ mah = x[0]
 
 Aef = mac/(rhof*Uef)
 Ae  = mah/(rho*Ue)
-print('Ae',Ae)
-print('Aef',Aef)
+#print('Ae',Ae)
+#print('Aef',Aef)
 
 
 '''Cálculo do impulso'''
 
 fnh = (mah*((1+f)*(Ue-Uo)))+((Pe-Po)*Ae)
-fnc = (B*mac*(Uef-Uo))+((Pef-Po)*Aef )
+fnc = (B*mac*(Uef-Uo))+((Pef-Po)*Aef)
 FN  = 2*(fnc+fnh)
 
-print('fnh',fnh)
-print('fnc',fnc)
-print('FN',FN)
+#print('fnh',fnh)
+#print('fnc',fnc)
+#print('FN',FN)
 
+'''
 plt.figure(1)
-plt.legend('Impulso x Mach')
 plt.xlabel('Mo')
 plt.ylabel('FN')
 plt.plot(Mo, FN, 'r')
-#plt.show()
-
+plt.show()
+'''
 
 '''ACOPLAMENTO MOTOR-AERONAVE'''
 
@@ -132,13 +130,19 @@ Wempty = 155500                                 #Peso vazio sem motor
 Clmax = 1.8                                     #CLMAX Admitido
 Aw = 427.8                                      #Área das asas
 
-rhocomb = 0.81                                  #Densidade combustível (JET A)
-qtdcomb = 20000                                 #Litros **
-
-Wmotor = 9800                                   #Peso motor P&W PW4098
+rhocomb = 0.81
+qtdcomb = 25000                                 #Litros
+Wmotor = 7264                                   #Peso motor P&W PW4098
 Wpas = 368*70                                   #peso total de passageiros com peso médio de 70kg 3 classes - config padrão
-Wci = 263080-155500-Wpas-2*Wmotor               #Peso combustível possível
+Wci = rhocomb*qtdcomb                           #Peso combustível possível
+                                                #Densidade combustível (JET A)
+#qtdcomb = Wci/(rhocomb*9.81)                   #Quantidade de combustível máxima em litros
+
+print('Wci',Wci)
+print('Quantidade de combustível', qtdcomb)
+
 W   = (155500+2*(Wmotor)+Wci+Wpas)*9.81         #Peso total inicial
+print('W', W)
 
 Cl = (2*W) / (delta1*101325*(Mo**2)*Aw)         #coeficiente de sustentação
 Cd = 0.026 + 0.0431*((Cl)**2)                   #Polar de arrasto
@@ -146,35 +150,42 @@ Cd = 0.026 + 0.0431*((Cl)**2)                   #Polar de arrasto
 
 FNdelta1 = FN/delta1
 
-WW = np.linspace(Wci, Wcf, 5)                      #Variação do peso inicial até o peso final step by step
+WW = np.linspace(Wci, Wcf, 10)                      #Variação do peso inicial até o peso final step by step
 newcl = (2*WW) / (delta1*gamma*101325*(Mo**2)*Aw)
 cd2 = 0.026 + 0.0431*((newcl)**2)                   #Polar de arrasto
 FNdelta2 = (gamma/2) * 101325 * cd2 * (Mo**2) * Aw
-
+#print('Variação do peso inicial até o final', WW)
 '''
-plt.figure(2)
-plt.plot(Mo, FNdelta1, 'r')
-plt.plot(Mo, FNdelta2, 'b')
-plt.legend('Impulso')
+plt.figure("Impulso Disponível / Requirido")
+plt.plot(Mo, FNdelta1, 'r', label='Impulso disponível')
+plt.plot(Mo, FNdelta2, 'b', label='Impulso requirido')
+plt.legend()
 plt.xlabel('Mo')
 plt.ylabel('FN')
-#plt.show()
+plt.show()
 '''
 
 rhoarSL = (101325/(R*298))                      #Densidade do ar Sea level
 Vstall = (2*W/(Clmax*rhoarSL*Aw))**(1/2)        #Velocidade de stall
 Vlo = (1.2)*Vstall                              #Velocidade de liftoff simplificada
 FNDEC = 0.707*Vlo                               #FN Decolagem simplificada
-amed = ((FNDEC - (0.02*W))/(W)) * 9.81          #Aceleração média
+amed = ((FNDEC-0.02*W) / W) * 9.81              #Aceleração média
 machfnedc = FNDEC/347
 SG = (Vlo**2)/(2*amed)
-print('SG',SG)
+print('vstall', Vstall)
+print('FNDEC', FNDEC)
+print('amed', amed)
+print('SG', SG)
 
 '''Consumo e Tempo para decolagem'''
+#ma - Calcular
+ma = 115
 mf = f[1] * ma
 TSFC = mf/FN[1]
 tdec = Vlo / amed                               #Tempo de descida
 consumodec = TSFC*FN[1]*tdec                    #Consumo na descida
+print('TSFC', TSFC)
+print('Tempo de descida', tdec)
 print('Consumo descida',consumodec)
 
 '''Atualizando dados de peso / Subida e Descida'''
@@ -185,13 +196,12 @@ dhdt = ((FN[1]-D[1])*Vlo)/W
 tsubida = (11000/dhdt)                          #Tempo de subida
 consumosubida = TSFC*FN[1]*tsubida              #Consumo na subida
 
-tdescida = tsubida
+tdescida = tsubida                              #Porque a velocidade é constante
 #consumodescida = consumosubida
 
 print('dhdt',dhdt)
 print('Consumo Subida', consumosubida)
 print('Tempo de subida',tsubida)
-print('Tempo de descida',tdec)
 
 '''Voo em cruzeiro'''
 
